@@ -519,10 +519,12 @@ main_loop (
       ) {
     if (stuff_empty()) {
       did_check_timestamps = FALSE;
-      if (need_check_timestamps)
+      if (need_check_timestamps) {
         check_timestamps(FALSE);
-      if (need_wait_return)             /* if wait_return still needed ... */
-        wait_return(FALSE);             /* ... call it now */
+      }
+      if (need_wait_return) {    // if wait_return still needed ...
+        wait_return(FALSE);      // ... call it now
+      }
       if (need_start_insertmode && goto_im()
           && !VIsual_active
          ) {
