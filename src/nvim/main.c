@@ -530,11 +530,11 @@ main_loop (
       }
     }
 
-    /* Reset "got_int" now that we got back to the main loop.  Except when
-     * inside a ":g/pat/cmd" command, then the "got_int" needs to abort
-     * the ":g" command.
-     * For ":g/pat/vi" we reset "got_int" when used once.  When used
-     * a second time we go back to Ex mode and abort the ":g" command. */
+    // Reset "got_int" now that we got back to the main loop.  Except when
+    // inside a ":g/pat/cmd" command, then the "got_int" needs to abort
+    // the ":g" command.
+    // For ":g/pat/vi" we reset "got_int" when used once.  When used
+    // a second time we go back to Ex mode and abort the ":g" command.
     if (got_int) {
       if (noexmode && global_busy && !exmode_active && previous_got_int) {
         /* Typed two CTRL-C in a row: go back to ex mode as if "Q" was
@@ -553,11 +553,9 @@ main_loop (
     exmode_active || (msg_scroll = FALSE);
     quit_more = FALSE;
 
-    /*
-     * If skip redraw is set (for ":" in wait_return()), don't redraw now.
-     * If there is nothing in the stuff_buffer or do_redraw is TRUE,
-     * update cursor and redraw.
-     */
+    // If skip redraw is set (for ":" in wait_return()), don't redraw now.
+    // If there is nothing in the stuff_buffer or do_redraw is TRUE,
+    // update cursor and redraw.
     if (skip_redraw || exmode_active)
       skip_redraw = FALSE;
     else if (do_redraw || stuff_empty()) {
