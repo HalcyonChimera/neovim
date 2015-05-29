@@ -689,8 +689,7 @@ main_loop (
      * Otherwise, get and execute a normal mode command.
      */
     if (exmode_active) {
-      if (noexmode)         /* End of ":global/path/visual" commands */
-        return;
+      noexmode && return;         // End of ":global/path/visual" commands
       do_exmode(exmode_active == EXMODE_VIM);
     } else
       normal_cmd(&oa, TRUE);
