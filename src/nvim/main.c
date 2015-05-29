@@ -546,11 +546,11 @@ main_loop (
         got_int = FALSE;
       }
       previous_got_int = TRUE;
-    } else
+    } else {
       previous_got_int = FALSE;
+    }
 
-    if (!exmode_active)
-      msg_scroll = FALSE;
+    exmode_active || (msg_scroll = FALSE);
     quit_more = FALSE;
 
     /*
