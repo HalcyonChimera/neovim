@@ -514,20 +514,14 @@ main_loop (
   ILOG("Starting Neovim main loop.");
 
   clear_oparg(&oa);
-  while (!cmdwin
-      || cmdwin_result == 0
-      ) {
+  while (!cmdwin || cmdwin_result == 0) {
     if (stuff_empty()) {
       did_check_timestamps = FALSE;
-      if (need_check_timestamps) {
-        check_timestamps(FALSE);
-      }
-      if (need_wait_return) {    // if wait_return still needed ...
-        wait_return(FALSE);      // ... call it now
-      }
+      need_check_timestamps && check_timestamps(FALSE);
+      need_wait_return && wait_return(FALSE); // Call wait return if we need it.
       if (need_start_insertmode && goto_im()
           && !VIsual_active
-         ) {
+        ) {
         need_start_insertmode = FALSE;
         stuffReadbuff((char_u *)"i");           /* start insert mode next */
         /* skip the fileinfo message now, because it would be shown
