@@ -493,17 +493,32 @@ int main(int argc, char **argv)
 }
 
 
+static inline void do_mappings_and_redos(Main_Loop_State * state) {
+  if (!stuff_empty()) return;
+  did_check_timestamps = FALSE;
+  need_check_timestamps && check_timestamps(FALSE);
+  need_wait_return && wait_return(FALSE); // Call wait_return if we need it.      
+  if (!need_start_insertmode) return;
+  if (!goto_im())             return;
+  if (VIsual_active)          return;
+  need_start_insertmode = FALSE;
+  stuffReadbuff((char_u *)"i");           // start insert mode next
+  // skip the fileinfo message now, because it would be shown
+  // after insert mode finishes!
+  need_fileinfo = FALSE;
+}
+    
+
+
 // Main loop: Execute Normal mode commands until exiting Vim.
 // Also used to handle commands in the command-line window, until the window
 // is closed.
 // Also used to handle ":visual" command after ":global": execute Normal mode
 // commands, return when entering Ex mode.  "noexmode" is TRUE then.
-void
-main_loop (
-    int cmdwin,         // TRUE when working in the command-line window
-    int noexmode        // TRUE when return on entering Ex mode
-)
-{
+void main_loop (
+  int cmdwin,         // TRUE when working in the command-line window
+  int noexmode        // TRUE when return on entering Ex mode
+) {
   oparg_T oa;                                   /* operator arguments */
   int previous_got_int = FALSE;                 /* "got_int" was TRUE */
   linenr_T conceal_old_cursor_line = 0;
@@ -514,56 +529,39 @@ main_loop (
 
   clear_oparg(&oa);
   while (!cmdwin || cmdwin_result == 0) {
-    
-    do {
 
-      stuff_empty() || break;
+    do_mappings_and_redos(&state);
 
-      did_check_timestamps = FALSE;
-      need_check_timestamps && check_timestamps(FALSE);
-      need_wait_return && wait_return(FALSE); // Call wait_return if we need it.      
 
-      need_start_insertmode || break;
-      goto_im()             || break;
-      !VIsual_active        || break;
-
-      need_start_insertmode = FALSE;
-      stuffReadbuff((char_u *)"i");           // start insert mode next
-      // skip the fileinfo message now, because it would be shown
-      // after insert mode finishes!
-      need_fileinfo = FALSE;
-
-    }
-    
     // Reset "got_int" now that we got back to the main loop.  Except when
     // inside a ":g/pat/cmd" command, then the "got_int" needs to abort
     // the ":g" command.
     // For ":g/pat/vi" we reset "got_int" when used once.  When used
     // a second time we go back to Ex mode and abort the ":g" command.
-    
     do {
-
-      got_int || previous_got_int = FALSE, break;
-      !exmode_active   || break;
-
+      if (!got_int) {
+      	previous_got_int = FALSE;
+      	break;
+      }
+      if (exmode_active) break;
       if (!global_busy) {
         quit_more || (void)vgetc()      // flush all buffers
         got_int = FALSE
-
       } else {
-        previous_got_int || break;
-        noexmode         || break;
-
+        if (!previous_got_int) break;
+        if (!noexmode)         break;
         // Typed two CTRL-C in a row: go back to ex mode as if "Q" was
         // used and keep "got_int" set, so that it aborts ":g".
         exmode_active = EXMODE_NORMAL;
         State = NORMAL;      
       }
       previous_got_int = TRUE;
-    }
+    } while (0);
+
 
     exmode_active || (msg_scroll = FALSE);
     quit_more = FALSE;
+
 
     // If skip redraw is set (for ":" in wait_return()), don't redraw now.
     // If there is nothing in the stuff_buffer or do_redraw is TRUE,
