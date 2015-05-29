@@ -518,7 +518,7 @@ main_loop (
     if (stuff_empty()) {
       did_check_timestamps = FALSE;
       need_check_timestamps && check_timestamps(FALSE);
-      need_wait_return && wait_return(FALSE); // Call wait return if we need it.
+      need_wait_return && wait_return(FALSE); // Call wait_return if we need it.
       if (need_start_insertmode && goto_im()
           && !VIsual_active
         ) {
@@ -542,8 +542,7 @@ main_loop (
         exmode_active = EXMODE_NORMAL;
         State = NORMAL;
       } else if (!global_busy || !exmode_active) {
-        if (!quit_more)
-          (void)vgetc();                        /* flush all buffers */
+        quit_more || (void)vgetc();      // flush all buffers
         got_int = FALSE;
       }
       previous_got_int = TRUE;
