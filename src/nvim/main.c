@@ -508,7 +508,30 @@ static inline void do_mappings_and_redos(Main_Loop_State * state) {
   need_fileinfo = FALSE;
 }
     
-
+static inline void reset_got_int(Main_Loop_State * state) {
+  // Reset "got_int" now that we got back to the main loop.  Except when
+  // inside a ":g/pat/cmd" command, then the "got_int" needs to abort
+  // the ":g" command.
+  // For ":g/pat/vi" we reset "got_int" when used once.  When used
+  // a second time we go back to Ex mode and abort the ":g" command.
+  if (!got_int) {
+    previous_got_int = FALSE;
+    break;
+  }
+  if (exmode_active) break;
+  if (!global_busy) {
+    quit_more || (void)vgetc()      // flush all buffers
+    got_int = FALSE
+  } else {
+    if (!previous_got_int) break;
+    if (!noexmode)         break;
+    // Typed two CTRL-C in a row: go back to ex mode as if "Q" was
+    // used and keep "got_int" set, so that it aborts ":g".
+    exmode_active = EXMODE_NORMAL;
+    State = NORMAL;      
+  }
+  previous_got_int = TRUE;
+}
 
 // Main loop: Execute Normal mode commands until exiting Vim.
 // Also used to handle commands in the command-line window, until the window
@@ -531,33 +554,7 @@ void main_loop (
   while (!cmdwin || cmdwin_result == 0) {
 
     do_mappings_and_redos(&state);
-
-
-    // Reset "got_int" now that we got back to the main loop.  Except when
-    // inside a ":g/pat/cmd" command, then the "got_int" needs to abort
-    // the ":g" command.
-    // For ":g/pat/vi" we reset "got_int" when used once.  When used
-    // a second time we go back to Ex mode and abort the ":g" command.
-    do {
-      if (!got_int) {
-      	previous_got_int = FALSE;
-      	break;
-      }
-      if (exmode_active) break;
-      if (!global_busy) {
-        quit_more || (void)vgetc()      // flush all buffers
-        got_int = FALSE
-      } else {
-        if (!previous_got_int) break;
-        if (!noexmode)         break;
-        // Typed two CTRL-C in a row: go back to ex mode as if "Q" was
-        // used and keep "got_int" set, so that it aborts ":g".
-        exmode_active = EXMODE_NORMAL;
-        State = NORMAL;      
-      }
-      previous_got_int = TRUE;
-    } while (0);
-
+    reset_got_int(&state);
 
     exmode_active || (msg_scroll = FALSE);
     quit_more = FALSE;
