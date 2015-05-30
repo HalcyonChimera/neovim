@@ -592,8 +592,9 @@ static inline void redraw_cursor(void * state) {
     need_cursor_line_redraw)
   ) {
     if (loop_state->conceal_old_cursor_line != loop_state->conceal_new_cursor_line &&
-      loop_state->conceal_old_cursor_line <= curbuf->b_ml.ml_line_count)
+      loop_state->conceal_old_cursor_line <= curbuf->b_ml.ml_line_count) {
       update_single_line(curwin, loop_state->conceal_old_cursor_line);
+    }
     update_single_line(curwin, loop_state->conceal_new_cursor_line);
     curwin->w_valid &= ~VALID_CROW;
   }

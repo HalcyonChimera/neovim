@@ -2574,6 +2574,9 @@ static char_u *lasticon = NULL;
 
 void maketitle(void)
 {
+  // If we don't need to make the title; then dont.
+  if (!need_maketitle) { return; }
+  
   char_u      *p;
   char_u      *t_str = NULL;
   char_u      *i_name;
@@ -2584,6 +2587,7 @@ void maketitle(void)
   char_u buf[IOSIZE];
   int off;
 
+  
   if (!redrawing()) {
     /* Postpone updating the title when 'lazyredraw' is set. */
     need_maketitle = TRUE;
